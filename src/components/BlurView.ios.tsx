@@ -23,7 +23,8 @@ type BlurType =
   | 'materialLight'
   | 'thickMaterialLight'
   | 'thinMaterialLight'
-  | 'ultraThinMaterialLight';
+  | 'ultraThinMaterialLight'
+  | 'pure';
 
 export type BlurViewProps = ViewProps & {
   blurType?: BlurType;

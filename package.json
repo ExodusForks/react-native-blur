@@ -1,6 +1,6 @@
 {
-  "name": "@react-native-community/blur",
-  "version": "4.4.1",
+  "name": "@exodus/react-native-blur",
+  "version": "4.5.0",
   "description": "React Native Blur component",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

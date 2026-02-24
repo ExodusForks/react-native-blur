@@ -16,7 +16,7 @@ const OVERLAY_COLORS = {
 
 export type BlurViewProps = ViewProps & {
   blurAmount?: number;
-  blurType?: 'dark' | 'light' | 'xlight';
+  blurType?: 'dark' | 'light' | 'xlight' | 'pure';
   blurRadius?: number;
   downsampleFactor?: number;
   overlayColor?: string;
@@ -53,6 +53,10 @@ const BlurView = forwardRef<View, BlurViewProps>(
     const getOverlayColor = () => {
       if (overlayColor != null) {
         return overlayColor;
+      }
+
+      if (blurType === 'pure') {
+        return 'rgba(0, 0, 0, 0)';
       }
 
       return OVERLAY_COLORS[blurType] || OVERLAY_COLORS.dark;

@@ -27,7 +27,8 @@ interface NativeProps extends ViewProps {
     | 'materialLight'
     | 'thickMaterialLight'
     | 'thinMaterialLight'
-    | 'ultraThinMaterialLight',
+    | 'ultraThinMaterialLight'
+    | 'pure',
     'dark'
   >;
   blurAmount?: WithDefault<Int32, 10>;
