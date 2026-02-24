@@ -134,6 +134,7 @@ using namespace facebook::react;
   if ([self.blurType isEqual: @"xlight"]) return UIBlurEffectStyleExtraLight;
   if ([self.blurType isEqual: @"light"]) return UIBlurEffectStyleLight;
   if ([self.blurType isEqual: @"dark"]) return UIBlurEffectStyleDark;
+  if ([self.blurType isEqual: @"pure"]) return UIBlurEffectStyleLight;
 
   #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000 /* __IPHONE_10_0 */
     if ([self.blurType isEqual: @"regular"]) return UIBlurEffectStyleRegular;
@@ -175,6 +176,20 @@ using namespace facebook::react;
   return UIAccessibilityIsReduceTransparencyEnabled() == YES && self.reducedTransparencyFallbackColor != NULL;
 }
 
+- (void)removeTintFromBlurView
+{
+  // UIVisualEffectView lays out its subviews as:
+  //   [backdrop (blur), tint overlay(s), contentView]
+  // contentView is the only public subview. Everything between the backdrop and
+  // contentView is the tint layer. Clearing backgroundColor on non-contentView
+  // subviews removes the tint without referencing any private class names.
+  for (UIView *subview in self.blurEffectView.subviews) {
+    if (subview != self.blurEffectView.contentView) {
+      subview.backgroundColor = [UIColor clearColor];
+    }
+  }
+}
+
 - (void)updateBlurEffect
 {
   // Without resetting the effect, changing blurAmount doesn't seem to work in Fabric...
@@ -183,6 +198,10 @@ using namespace facebook::react;
   UIBlurEffectStyle style = [self blurEffectStyle];
   self.blurEffect = [BlurEffectWithAmount effectWithStyle:style andBlurAmount:self.blurAmount];
   self.blurEffectView.effect = self.blurEffect;
+
+  if ([self.blurType isEqual:@"pure"]) {
+    [self removeTintFromBlurView];
+  }
 }
 
 - (void)updateFallbackView

@@ -7,7 +7,7 @@ import type {
 
 interface NativeProps extends ViewProps {
   blurAmount?: WithDefault<Int32, 10>;
-  blurType?: WithDefault<'dark' | 'light' | 'xlight', 'dark'>;
+  blurType?: WithDefault<'dark' | 'light' | 'xlight' | 'pure', 'dark'>;
   blurRadius?: Int32;
   downsampleFactor?: Int32;
   overlayColor?: ColorValue;
