@@ -1,5 +1,4 @@
 #import "BlurView.h"
-#import "BlurEffectWithAmount.h"
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import <React/RCTConversions.h>
@@ -73,7 +72,7 @@ using namespace facebook::react;
 {
   const auto &oldViewProps = *std::static_pointer_cast<const BlurViewProps>(_props);
   const auto &newViewProps = *std::static_pointer_cast<const BlurViewProps>(props);
-  
+
   if (oldViewProps.blurAmount != newViewProps.blurAmount) {
     NSNumber *blurAmount = [NSNumber numberWithInt:newViewProps.blurAmount];
     [self setBlurAmount:blurAmount];
@@ -83,19 +82,29 @@ using namespace facebook::react;
     NSString *blurType = [NSString stringWithUTF8String:toString(newViewProps.blurType).c_str()];
     [self setBlurType:blurType];
   }
-  
+
   if (oldViewProps.reducedTransparencyFallbackColor != newViewProps.reducedTransparencyFallbackColor) {
     UIColor *color = RCTUIColorFromSharedColor(newViewProps.reducedTransparencyFallbackColor);
     [self setReducedTransparencyFallbackColor:color];
   }
-  
+
   [super updateProps:props oldProps:oldProps];
 }
 #endif // RCT_NEW_ARCH_ENABLED
 
 - (void)dealloc
 {
+  [self stopBlurAnimator];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)stopBlurAnimator
+{
+  if (self.blurAnimator && self.blurAnimator.state != UIViewAnimatingStateInactive) {
+    // stopAnimation:YES transitions directly to inactive, allowing deallocation.
+    [self.blurAnimator stopAnimation:YES];
+  }
+  self.blurAnimator = nil;
 }
 
 - (void)layoutSubviews
@@ -161,7 +170,7 @@ using namespace facebook::react;
     if ([self.blurType isEqual: @"thinMaterialLight"]) return UIBlurEffectStyleSystemThinMaterialLight;
     if ([self.blurType isEqual: @"ultraThinMaterialLight"]) return UIBlurEffectStyleSystemUltraThinMaterialLight;
   #endif
-    
+
   #if TARGET_OS_TV
     if ([self.blurType isEqual: @"regular"]) return UIBlurEffectStyleRegular;
     if ([self.blurType isEqual: @"prominent"]) return UIBlurEffectStyleProminent;
@@ -192,12 +201,26 @@ using namespace facebook::react;
 
 - (void)updateBlurEffect
 {
-  // Without resetting the effect, changing blurAmount doesn't seem to work in Fabric...
-  // Setting it to nil should also enable blur animations (see PR #392)
+  [self stopBlurAnimator];
   self.blurEffectView.effect = nil;
+
   UIBlurEffectStyle style = [self blurEffectStyle];
-  self.blurEffect = [BlurEffectWithAmount effectWithStyle:style andBlurAmount:self.blurAmount];
-  self.blurEffectView.effect = self.blurEffect;
+  self.blurEffect = [UIBlurEffect effectWithStyle:style];
+
+  // Use UIViewPropertyAnimator so that fractionComplete controls blur intensity.
+  // This works uniformly across all UIBlurEffectStyle values, including the iOS 13+
+  // material styles where the old effectSettings KVC hack had no effect.
+  __weak BlurView *weakSelf = self;
+  self.blurAnimator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:1.0
+                 curve:UIViewAnimationCurveLinear
+            animations:^{
+    weakSelf.blurEffectView.effect = weakSelf.blurEffect;
+  }];
+
+  // Never call startAnimation — we only use fractionComplete as a static value.
+  // blurAmount 0–100 maps to fractionComplete 0.0–1.0.
+  self.blurAnimator.fractionComplete = MAX(0.0f, MIN(1.0f, self.blurAmount.floatValue / 100.0f));
 
   if ([self.blurType isEqual:@"pure"]) {
     [self removeTintFromBlurView];

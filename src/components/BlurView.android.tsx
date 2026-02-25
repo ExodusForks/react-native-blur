@@ -1,10 +1,11 @@
-import React, { forwardRef, useEffect } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import {
   View,
   DeviceEventEmitter,
   StyleSheet,
   ViewProps,
   ViewStyle,
+  findNodeHandle,
 } from 'react-native';
 import NativeBlurView from '../fabric/BlurViewNativeComponentAndroid';
 
@@ -22,6 +23,7 @@ export type BlurViewProps = ViewProps & {
   overlayColor?: string;
   enabled?: boolean;
   autoUpdate?: boolean;
+  blurTargetRef?: React.RefObject<View>;
 };
 
 const BlurView = forwardRef<View, BlurViewProps>(
@@ -36,10 +38,13 @@ const BlurView = forwardRef<View, BlurViewProps>(
       autoUpdate,
       children,
       style,
+      blurTargetRef,
       ...rest
     },
     ref
   ) => {
+    const [blurTargetTag, setBlurTargetTag] = useState<number | null>(null);
+
     useEffect(() => {
       DeviceEventEmitter.addListener('ReactNativeBlurError', (message) => {
         throw new Error(`[ReactNativeBlur]: ${message}`);
@@ -49,6 +54,12 @@ const BlurView = forwardRef<View, BlurViewProps>(
         DeviceEventEmitter.removeAllListeners('ReactNativeBlurError');
       };
     }, []);
+
+    useEffect(() => {
+      if (blurTargetRef?.current) {
+        setBlurTargetTag(findNodeHandle(blurTargetRef.current));
+      }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const getOverlayColor = () => {
       if (overlayColor != null) {
@@ -101,6 +112,7 @@ const BlurView = forwardRef<View, BlurViewProps>(
         blurType={blurType}
         enabled={enabled}
         autoUpdate={autoUpdate}
+        blurTargetRef={blurTargetTag ?? undefined}
         pointerEvents="none"
         style={StyleSheet.compose(styles.transparent, style)}
       >

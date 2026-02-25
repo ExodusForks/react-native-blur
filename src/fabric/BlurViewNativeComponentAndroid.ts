@@ -13,6 +13,7 @@ interface NativeProps extends ViewProps {
   overlayColor?: ColorValue;
   enabled?: boolean;
   autoUpdate?: boolean;
+  blurTargetRef?: Int32;
 }
 
 export default codegenNativeComponent<NativeProps>('AndroidBlurView', {

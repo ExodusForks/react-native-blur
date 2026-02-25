@@ -1,11 +1,7 @@
 package com.reactnativecommunity.blurview;
 
-import android.view.View;
 import com.facebook.react.uimanager.ThemedReactContext;
 
-import eightbitlab.com.blurview.BlurView;
-
-import java.util.Objects;
 import javax.annotation.Nonnull;
 
 @SuppressWarnings("unused")
@@ -16,37 +12,39 @@ class BlurViewManagerImpl {
   public static final int defaultRadius = 10;
   public static final int defaultSampling = 10;
 
-  public static @Nonnull BlurView createViewInstance(@Nonnull ThemedReactContext ctx) {
-    BlurView blurView = new BlurView(ctx);
-    View decorView = Objects
-      .requireNonNull(ctx.getCurrentActivity())
-      .getWindow()
-      .getDecorView();
-    blurView
-      .setupWith(decorView.findViewById(android.R.id.content))
-      .setFrameClearDrawable(decorView.getBackground())
-      .setBlurRadius(defaultRadius);
-    return blurView;
+  public static @Nonnull ReactBlurView createViewInstance(@Nonnull ThemedReactContext ctx) {
+    return new ReactBlurView(ctx);
   }
 
-  public static void setRadius(BlurView view, int radius) {
-    view.setBlurRadius(radius);
+  public static void setBlurTargetRef(ReactBlurView view, int tag) {
+    if (tag <= 0) return;
+    view.blurTargetTag = tag;
+    view.attemptSetup();
+  }
+
+  public static void setRadius(ReactBlurView view, int radius) {
+    // Store so attemptSetup() can re-apply after setupWith(), and also
+    // update the running renderer if setup has already happened.
+    view.blurRadius = (float) radius;
+    view.setBlurRadius((float) radius);
     view.invalidate();
   }
 
-  public static void setColor(BlurView view, int color) {
+  public static void setColor(ReactBlurView view, int color) {
+    // Store for re-apply in attemptSetup(); also push to renderer directly.
+    view.overlayColor = color;
     view.setOverlayColor(color);
     view.invalidate();
   }
 
-  public static void setDownsampleFactor(BlurView view, int factor) {}
+  public static void setDownsampleFactor(ReactBlurView view, int factor) {}
 
-  public static void setAutoUpdate(BlurView view, boolean autoUpdate) {
+  public static void setAutoUpdate(ReactBlurView view, boolean autoUpdate) {
     view.setBlurAutoUpdate(autoUpdate);
     view.invalidate();
   }
 
-  public static void setBlurEnabled(BlurView view, boolean enabled) {
+  public static void setBlurEnabled(ReactBlurView view, boolean enabled) {
     view.setBlurEnabled(enabled);
   }
 }
