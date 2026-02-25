@@ -31,6 +31,14 @@ cd ios && pod install
 
 ### Usage
 
+#### BlurTarget (Android only)
+
+On Android, the content you want to blur must be wrapped in a `BlurTarget` view, and the `BlurTarget` ref is passed to `BlurView`. `BlurTarget` is a no-op on iOS — it renders a plain `View` — so you can safely include it in cross-platform code.
+
+| Property | Notes |
+| ----------- | ----------- |
+| All `View` props | `BlurTarget` is a transparent wrapper and accepts all standard `View` props |
+
 #### BlurView
 
 | Property | Possible Values | Default | Platform
@@ -41,6 +49,7 @@ cd ios && pod install
 | `blurRadius` | 0 - 25 | Matches iOS blurAmount | Android only
 | `downsampleFactor` | 0 - 25 | Matches iOS blurAmount | Android only
 | `overlayColor` | Any color | Default color based on iOS blurType | Android only
+| `blurTargetRef` | `React.RefObject<View>` | - | Android only (required for BlurView ≥ 3.2.0)
 
 #### blurType
 
@@ -77,25 +86,34 @@ cd ios && pod install
 Complete usage example that works on iOS and Android:
 
 ```javascript
-import React, { Component } from "react";
+import React, { useRef } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
-import { BlurView } from "@react-native-community/blur";
+import { BlurView, BlurTarget } from "@react-native-community/blur";
 
 export default function Menu() {
+  const blurTargetRef = useRef(null);
+
   return (
     <View style={styles.container}>
-      <Image
-        key={'blurryImage'}
-        source={{ uri }}
-        style={styles.absolute}
-      />
-      <Text style={styles.absolute}>Hi, I am some blurred text</Text>
-      {/* in terms of positioning and zIndex-ing everything before the BlurView will be blurred */}
+      {/*
+        On Android, wrap the content to be blurred inside BlurTarget and pass
+        the ref to BlurView. BlurTarget is a no-op plain View on iOS.
+      */}
+      <BlurTarget ref={blurTargetRef} style={styles.absolute}>
+        <Image
+          key={'blurryImage'}
+          source={{ uri }}
+          style={styles.absolute}
+        />
+        <Text style={styles.absolute}>Hi, I am some blurred text</Text>
+      </BlurTarget>
+      {/* BlurView sits on top and blurs everything inside BlurTarget */}
       <BlurView
         style={styles.absolute}
         blurType="light"
         blurAmount={10}
         reducedTransparencyFallbackColor="white"
+        blurTargetRef={blurTargetRef}
       />
       <Text>I'm the non blurred text because I got rendered on top of the BlurView</Text>
     </View>
@@ -117,7 +135,9 @@ const styles = StyleSheet.create({
 });
 ```
 
-In this example, the `Image` component will be blurred, because the `BlurView` in positioned on top. But the `Text` will stay unblurred.
+In this example, the `Image` component will be blurred because it is inside `BlurTarget` and the `BlurView` is positioned on top. The `Text` rendered after `BlurView` will stay unblurred.
+
+> **Android note:** `BlurTarget` is required on Android (BlurView ≥ 3.2.0). Without it the `BlurView` will render without a blur effect. `BlurTarget` renders as a transparent `View` on iOS so it is safe to use in shared cross-platform code.
 
 If the accessibility setting [`Reduce Transparency`](https://support.apple.com/guide/iphone/display-settings-iph3e2e1fb0/ios) is enabled the `BlurView` will use `reducedTransparencyFallbackColor` as it's background color rather than blurring. If no `reducedTransparencyFallbackColor` is provided, the`BlurView`will use the default fallback color (white, black, or grey depending on `blurType`)
 
