@@ -30,7 +30,7 @@ class ReactBlurView extends BlurView {
     View target = rootView.findViewById(blurTargetTag);
     if (!(target instanceof BlurTarget)) return;
 
-    BlurViewFacade facade = setupWith((BlurTarget) target)
+    BlurViewFacade facade = setupWith((BlurTarget) target, 4f, false)
       .setBlurRadius(blurRadius);
 
     // Optional: set the window background so fully-transparent root views don't
