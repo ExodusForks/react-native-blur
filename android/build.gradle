@@ -139,5 +139,5 @@ dependencies {
   implementation "com.facebook.react:react-native:+"
   // From node_modules
 
-  implementation 'com.github.Dimezis:BlurView:version-3.2.0'
+  implementation 'com.github.Dimezis:BlurView:e81564e1338d962b7050336c56917cff26e96c3c'
 }
