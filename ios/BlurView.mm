@@ -90,6 +90,19 @@ using namespace facebook::react;
 
   [super updateProps:props oldProps:oldProps];
 }
+
+- (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+{
+  [self.blurEffectView.contentView addSubview:childComponentView];
+}
+
+- (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
+{
+  // Override unmountChildComponentView to avoid an assertion on childComponentView.superview == self
+  // childComponentView is not a direct subview of self, as it's inserted into blurEffectView.contentView
+  [childComponentView removeFromSuperview];
+}
+
 #endif // RCT_NEW_ARCH_ENABLED
 
 - (void)dealloc
