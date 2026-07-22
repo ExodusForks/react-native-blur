@@ -21,6 +21,9 @@
 @property (nonatomic, strong, nullable) UIView *reducedTransparencyFallbackView;
 
 - (void)updateBlurEffect;
+- (void)didUpdateBlurEffect;
+- (nonnull UIView *)blurContentView;
+- (void)ensureBlurContentViewHierarchy;
 - (void)updateFallbackView;
 - (BOOL)useReduceTransparencyFallback;
 @end

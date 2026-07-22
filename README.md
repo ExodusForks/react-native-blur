@@ -58,6 +58,7 @@ On Android, the content you want to blur must be wrapped in a `BlurTarget` view,
 | `xlight` | extra light blur type
 | `light` | light blur type
 | `dark` | dark blur type
+| `pure` | tint-free light blur on iOS; no custom overlay on Android
 | `extraDark` | extra dark blur type (tvOS only)
 | `regular` | regular blur type (iOS 10+ and tvOS only)
 | `prominent` |  prominent blur type (iOS 10+ and tvOS only)

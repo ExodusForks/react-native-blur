@@ -60,8 +60,8 @@ using namespace facebook::react;
 
 - (void)layoutSubviews
 {
-    [super layoutSubviews];
     self.vibrancyEffectView.frame = self.bounds;
+    [super layoutSubviews];
 }
 
 - (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex
@@ -74,39 +74,33 @@ using namespace facebook::react;
   if ([self useReduceTransparencyFallback]) {
     [self addSubview:subview];
   } else {
-    [self.vibrancyEffectView.contentView addSubview:subview];
+    [[self blurContentView] addSubview:subview];
   }
 }
 
-- (void)updateBlurEffect
+- (void)didUpdateBlurEffect
 {
-  [super updateBlurEffect];
+  [super didUpdateBlurEffect];
   [self updateVibrancyEffect];
 }
 
 - (void)updateVibrancyEffect
 {
-  self.vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:self.blurEffect];
+  self.vibrancyEffect = self.blurEffect ? [UIVibrancyEffect effectForBlurEffect:self.blurEffect] : nil;
   self.vibrancyEffectView.effect = self.vibrancyEffect;
 }
 
-- (void)updateFallbackView
+- (UIView *)blurContentView
 {
-  [super updateFallbackView];
+  return self.vibrancyEffectView ? self.vibrancyEffectView.contentView : [super blurContentView];
+}
 
-  if ([self useReduceTransparencyFallback]) {
-    for (UIView *subview in self.blurEffectView.contentView.subviews) {
-      [subview removeFromSuperview];
-      [self addSubview:subview];
-    }
-  } else {
-    for (UIView *subview in self.subviews) {
-      if (subview == self.blurEffectView) continue;
-      if (subview == self.reducedTransparencyFallbackView) continue;
+- (void)ensureBlurContentViewHierarchy
+{
+  [super ensureBlurContentViewHierarchy];
 
-      [subview removeFromSuperview];
-      [self.blurEffectView.contentView addSubview:subview];
-    }
+  if (self.vibrancyEffectView && self.vibrancyEffectView.superview != self.blurEffectView.contentView) {
+    [self.blurEffectView.contentView addSubview:self.vibrancyEffectView];
   }
 }
 
